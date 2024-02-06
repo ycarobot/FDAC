@@ -8,7 +8,7 @@ numpy
 ```
 
 ### Install Datasets
-We need users to declare a `base path` to store the dataset as well as the log of training procedure. The directory structure should be
+We need users to declare a `base path` to store the dataset as well as the log of training procedure. The directory structure should be :
 
 
 ```

@@ -102,18 +102,15 @@ def train_to_csv(baseline, dataset, dt, domain_name, seed=0, **kwargs):
     for mixup in [False]:
         opt.mixup_p = mixup
         opt.tb_name = '{}'.format(opt.baseline)
-        result_path = r'./{}/{}'.format( opt.dataset, opt.tb_name)
+        result_path = r'./{}/{}'.format(opt.dataset, opt.tb_name)
         os.makedirs(result_path, exist_ok=True)
         for local_epochs in [10, 20, 50, 100, 200]:
             # opt.train_epochs = int(100 / local_epochs)
             opt.local_epochs = local_epochs
-        # for local_epochs in [1, 2, 5, 10, 20, 30, 40, 50]:
-        #     # opt.train_epochs = int(100 / local_epochs)
-        #     opt.local_epochs = local_epochs
             for iter in range(1):
                 opt.iter = iter
                 result = training(opt)
-                with open('{}/{}_LE_{}.csv'.format(result_path, opt.domain_name, opt.local_epochs), 'a+',
+                with open('./{}/{}_LE_{}.csv'.format(result_path, opt.domain_name, opt.local_epochs), 'a+',
                           newline='') as f:
                     f_csv = csv.writer(f)
                     f_csv.writerow([result])
