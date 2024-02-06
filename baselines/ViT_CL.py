@@ -12,11 +12,13 @@ from torch import nn, optim
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from utils import eval_utils, federated_aggregation_utils
 
+
 def to_one_hot(label, n_classes):
     y_onehot = torch.FloatTensor(label.shape[0], n_classes).to(label.device)
     y_onehot.zero_()
     y_onehot.scatter_(1, label.unsqueeze(1), 1)
     return y_onehot
+
 
 def knowledge_vote(knowledge_list, confidence_gate, num_classes):
     """
@@ -24,7 +26,7 @@ def knowledge_vote(knowledge_list, confidence_gate, num_classes):
     :param float confidence_gate: the confidence gate to judge which sample to use
     :return: consensus_confidence,consensus_knowledge,consensus_knowledge_weight
     """
-    # max probability: [0.2, 0.06, 0.01] max_classes: [10, 20, 8]
+
     max_p, max_p_class = knowledge_list.max(2)  # In Ds,  [bs, n_ds]   k_list: [bs, n_ds]
     max_conf, _ = max_p.max(1)  #  
     max_p_mask = (max_p > confidence_gate).float().cuda()  # To judge
@@ -44,6 +46,7 @@ def knowledge_vote(knowledge_list, confidence_gate, num_classes):
         1, consensus_knowledge.view(-1, 1), 1)  # to one hot
     return consensus_knowledge_conf, consensus_knowledge, consensus_knowledge_mask
 
+
 def get_consensus_knowledge(x, net_list, n_classes):
     with torch.no_grad():
         knowledge_list = [torch.softmax(net_list[i+1].predict(x), dim=1).unsqueeze(1) for i in range(len(net_list[1:]))]
@@ -51,6 +54,7 @@ def get_consensus_knowledge(x, net_list, n_classes):
         _, consensus_knowledge, consensus_weight = knowledge_vote(
             knowledge_list, confidence_gate=0.85, num_classes=n_classes)  # c_k: [bs, n_c]  one-hot
     return consensus_knowledge, consensus_weight
+
 
 def feature_mixup(x, y_onehot=None):
     device = x.device
@@ -65,6 +69,7 @@ def feature_mixup(x, y_onehot=None):
         y_onehot_mixed = y0 + y1
         return x_mixed, y_onehot_mixed
     else: return x_mixed
+
 
 def SupConLoss_normal(features, labels, class_weight=None):
     if len(labels.shape) > 1:
@@ -95,10 +100,11 @@ def SupConLoss_normal(features, labels, class_weight=None):
     loss = loss.mean()
     return loss
 
-class MultiLevel_CL():
+
+class MultiLevel_CL:
     def __init__(self, n_classes):
         self.n_classes = n_classes
-        self.n_blks = 12
+        self.n_blks = 12  # vit-base
         self.blk_indices = [5, 6, 7, 8, 9, 10, 11]
         self.loss_weights = [0.05, 0.001, 0.1, 1.0]  # block, affinity, prototype, pl
         self.matching_loss = nn.MSELoss(reduction='sum')
@@ -147,7 +153,7 @@ class MultiLevel_CL():
         for i in range(len(net_list[1:])):
             net_list[i+1].classifier.net.weight.data = m * net_list[i+1].classifier.net.weight + (1 - m) * prototype_dt
 
-    def forward_GlobalLevel(self, tokens_fea, y_onehot, net_list, AffinityMatrix, mixup_p=True):
+    def forward_GlobalLevel(self, tokens_fea, y_onehot, net_list, AffinityMatrix=None, mixup_p=True):
         device = tokens_fea.device
         # cls_token = tokens_fea[:, 0]
         cls_token = tokens_fea[:, 1:, :].mean(1)
@@ -185,7 +191,7 @@ class MultiLevel_CL():
 class Classifier(nn.Module):
     def __init__(self, in_dim, n_classes):
         super(Classifier, self).__init__()
-        self.net = weightNorm(nn.Linear(in_dim, n_classes, bias=False), name='weight')
+        self.net = weightNorm(nn.Linear(in_dim, n_classes, bias=False), name='weight')  # class prototype
         # self.net = nn.Linear(in_dim, n_classes, bias=False)
         # self.weight = self.net.weight  # do not use this! wrong!!! make device(gpu-to-cpu)
 

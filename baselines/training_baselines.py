@@ -8,11 +8,10 @@ from torch.optim.lr_scheduler import CosineAnnealingLR
 from utils import eval_utils, federated_aggregation_utils
 from baselines import SourceOnly
 
+
 def train_ds_normal(train_dloader, net, opt, loss_scaler):
     criterion_c = nn.CrossEntropyLoss()
     optimizer = optim.SGD(net.parameters(), lr=opt.lr, momentum=0.9, weight_decay=1e-4)
-    # iter_d = Continuous_Dataloader(train_dloader)
-    # for _ in range(opt.train_epochs):
     net.train()
     for (x, y, index) in train_dloader:
         if x.shape[0] == 1:
@@ -21,10 +20,8 @@ def train_ds_normal(train_dloader, net, opt, loss_scaler):
         with amp.autocast(): # Automatic mixed precision
             z, _, _ = net(x)
             loss_total = criterion_c(z, y)
-        # loss_total = losses.CrossEntropyLabelSmooth(opt.n_classes, 0.1)(z, y)
         optimizer.zero_grad()
         loss_scaler(loss_total, optimizer, clip_grad=None, parameters=net.parameters())
-        # break
 
 def train_dt(epoch_out, train_loader, net_list, optimizer, loss_scaler, criterion, test_loader=None, **kwargs):
     for epoch_in, (x, _, target_indices) in enumerate(train_loader):

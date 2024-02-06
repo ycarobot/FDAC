@@ -4,6 +4,7 @@ import torch.nn.functional as F
 import torch.nn.utils.weight_norm as weightNorm
 from baselines.ViT_network import ViT_Cross
 
+
 class Classifier(nn.Module):
     def __init__(self, in_dim, n_classes):
         super(Classifier, self).__init__()

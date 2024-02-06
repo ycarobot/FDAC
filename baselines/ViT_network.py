@@ -1,9 +1,4 @@
-# -*- coding: utf-8 -*-
-# @Time : 2022/10/16 9:16
-# @Site :
-# @File : vit_utils.py
-# @Software: PyCharm
-# @Function:
+
 import copy
 import math
 from itertools import repeat
