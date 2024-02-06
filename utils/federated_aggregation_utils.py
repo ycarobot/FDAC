@@ -55,7 +55,7 @@ def vit_block_name(net, block_index_list):
             name_list.append(k)
     return name_list
 
-# update parames
+# update params
 def federated_update_parameters_Blocks(net_list, block_index_list=None, domain_weight=None):
     if domain_weight is None:
         domain_weight = [(1 / len(net_list)) for _ in range(len(net_list))]
@@ -67,7 +67,7 @@ def federated_update_parameters_Blocks(net_list, block_index_list=None, domain_w
     blocks_k_list = vit_block_name(net_list[0], block_index_list)
     for k, v in net_list[0].named_parameters():
         if 'backbone.blocks' in k and k not in blocks_k_list:
-                continue  # not update
+                continue  # not update these block
         else:
             temp = torch.zeros_like(v)
             for i in range(len(net_list)):

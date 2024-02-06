@@ -1,7 +1,4 @@
 
-
-
-
 class OptimizerManager:
     def __init__(self, optims):
         self.optims = optims  # if isinstance(optims, Iterable) else [optims]
